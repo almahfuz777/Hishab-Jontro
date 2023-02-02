@@ -1,0 +1,9 @@
+// IDE files
+out/*
+.idea/*
+Hishab Jontro.iml
+
+// Unnecessary directories
+src/*
+!src/images/
+!src/main/
