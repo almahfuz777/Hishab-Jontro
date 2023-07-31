@@ -7,13 +7,29 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 
 public class Controller {
-    @FXML private Label display;
-    @FXML private Label tempDisplay;
+    // making the frame movable
+    @FXML private Pane frame;
+
+    private double x,y;
+    public void init(Stage stage) {
+        frame.setOnMousePressed(mouseEvent -> {
+            x = mouseEvent.getSceneX();
+            y = mouseEvent.getSceneY();
+        });
+        frame.setOnMouseDragged(mouseEvent -> {
+            stage.setX(mouseEvent.getScreenX()-x);
+            stage.setY(mouseEvent.getScreenY()-y);
+        });
+    }
+
+    @FXML private Label display;    // main display
+    @FXML private Label tempDisplay;    // temporary display on the top corner
+
     @FXML private Pane btnClear,btnEqual,btn1,btn2,btn3,btn4,btn5,btn6,btn7,btn8,btn9,btn0,btnDot,btnBackspace,btnPlus,btnMinus,btnMultiply,btnDivide;
 
-    //private String currentDisplay = (display != null)? display.getText(): "";
     private double num1;
     private String operator;
     @FXML public void numberClick(MouseEvent event){
@@ -25,6 +41,8 @@ public class Controller {
             display.setText(display.getText() + value);
         }
     }
+    int operationActive = 0;    // num1 received, waiting for num2
+
     @FXML
     public void symbolClick(MouseEvent event) {
         String symbol = ((Pane)event.getSource()).getId().replace("btn","");
@@ -33,47 +51,58 @@ public class Controller {
             display.setText("0");
             tempDisplay.setText("");
             num1 = 0;
+            operationActive = 0;
         }
         // Dot
-        else if(symbol.equals("Dot")){
-            if(!(display.getText().contains("."))){ // checking for existing point
-                if(display.getText().equals("0")) display.setText("0.");
-                else display.setText(display.getText()+".");
+        else if (symbol.equals("Dot")) {
+            if (!(display.getText().contains("."))) { // checking for existing point
+                if (display.getText().equals("0")) display.setText("0.");
+                else display.setText(display.getText() + ".");
             }
         }
 
         // Backspace
-        else if(symbol.equals("Backspace")){
+        else if (symbol.equals("Backspace")) {
             String str = display.getText();
-            str = str.substring(0, str.length()-1);
-            display.setText(str);
+            if (!str.isEmpty()) {
+                str = str.substring(0, str.length() - 1);
+                display.setText(str);
+            }
+            operationActive = 0;
         }
         // Result
-        else if(symbol.equals("Equal")){
-            double result = 0;
-            double num2 = Double.parseDouble(display.getText());
-            tempDisplay.setText(tempDisplay.getText()+display.getText()+"=");
-            switch (operator){
-                case "+" -> result = num1+num2;
-                case "-" -> result = num1-num2;
-                case "*" -> result = num1*num2;
-                case "/" -> result = num1/num2;
+        else if (symbol.equals("Equal")) {
+            String prev = tempDisplay.getText();
+            if (!prev.isEmpty() && prev.charAt(prev.length() - 1) != '=') { // checking for repetition of equal
+                double result = 0;
+                double num2 = Double.parseDouble(display.getText());
+                tempDisplay.setText(tempDisplay.getText() + display.getText() + "=");
+                switch (operator) {
+                    case "+" -> result = num1 + num2;
+                    case "-" -> result = num1 - num2;
+                    case "*" -> result = num1 * num2;
+                    case "/" -> result = num1 / num2;
+                }
+                display.setText(String.valueOf(result));
+                num1 = result;
+                operator = ".";
+                operationActive = 0;
             }
-            display.setText(String.valueOf(result));
-            num1 = result;
-            operator = ".";
         }
         // Second number Input
         else{
-            switch (symbol) {
-                case "Plus" -> operator = "+";
-                case "Minus" -> operator = "-";
-                case "Multiply" -> operator = "*";
-                case "Divide" -> operator = "/";
+            if(operationActive !=1) {
+                switch (symbol) {
+                    case "Plus" -> operator = "+";
+                    case "Minus" -> operator = "-";
+                    case "Multiply" -> operator = "*";
+                    case "Divide" -> operator = "/";
+                }
+                num1 = Double.parseDouble(display.getText());
+                tempDisplay.setText(display.getText() + operator);
+                display.setText("0");
+                operationActive = 1;
             }
-            num1 = Double.parseDouble(display.getText());
-            tempDisplay.setText(display.getText()+operator);
-            display.setText("0");
         }
     }
     @FXML public void exit(){
@@ -84,7 +113,7 @@ public class Controller {
         String contentText = "Created and Maintained by:\nAl Mahfuz\nGitHub: github.com/almahfuz777";
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION, contentText, ButtonType.OK);
-        alert.setTitle("Information");
+        alert.setTitle("Hishab Jontro v1.0.1");
         alert.setHeaderText(null);
         ImageView info = new ImageView("images/info.png");
         info.setFitHeight(48); info.setFitWidth(48);

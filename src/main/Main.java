@@ -16,15 +16,18 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"));
-        Scene scene = new Scene(root);
-        scene.setFill(Color.TRANSPARENT);   //
+        //Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Main.fxml"));
+        Scene scene = new Scene(loader.load());
+        //Scene scene = new Scene(root);
+        scene.setFill(Color.TRANSPARENT);
 
         stage.setScene(scene);
-        stage.initStyle(StageStyle.TRANSPARENT);    //
+        stage.initStyle(StageStyle.TRANSPARENT);
         stage.setResizable(false);
         stage.setTitle("Hishab Jontro");
         stage.getIcons().add(new Image("/images/icon.png"));
+        ((Controller)loader.getController()).init(stage);   //
         stage.show();
    }
 
